@@ -1,0 +1,26 @@
+---
+title: "EEB313_SegmentedVirus"
+output: html_document
+date: "2024-11-05"
+---
+
+```{r}
+library(tidyverse)
+set.seed(313)
+```
+
+```{r}
+mv_associations <- read.csv("MammalViruses_Associations.csv")
+
+mv_sample <- mv_associations %>% sample_n(1000)
+mv_sample_select <- select(mv_sample, HostOrder, Virus)
+
+mv_sample_select
+```
+```{r}
+virus_data <- read.csv("HP3_viruses.csv")
+
+virus_select <- select(virus_data, vVirusNameCorrected, vSegmentedTF)
+
+virus_select
+```
