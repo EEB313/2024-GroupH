@@ -12,15 +12,43 @@ set.seed(313)
 ```{r}
 mv_associations <- read.csv("MammalViruses_Associations.csv")
 
+#samples only 1000 so we can test it, and then run on all data
 mv_sample <- mv_associations %>% sample_n(1000)
+
+#selects columns
 mv_sample_select <- select(mv_sample, HostOrder, Virus)
 
-mv_sample_select
+#changes virus names to match virus data
+mv_sample_select$Virus <- sub(" ", "_", mv_sample_select$Virus)
+mv_sample_select$Virus <- tolower(mv_sample_select$Virus)
+
+
 ```
+
 ```{r}
 virus_data <- read.csv("HP3_viruses.csv")
 
 virus_select <- select(virus_data, vVirusNameCorrected, vSegmentedTF)
-
-virus_select
+virus_select$vVirusNameCorrected <- tolower(virus_select$vVirusNameCorrected)
 ```
+
+#rename columns
+virus_select %>% 
+  rename(
+    Virus = vVirusNameCorrected,
+    SegmentedTF = vSegmentedTF
+    )
+
+```{r}
+#attempt to merge df:
+df_merge <- merge(mv_sample_select, virus_select, by.x = "Virus", by.y = 'vVirusNameCorrected', 
+                  all.x = TRUE, all.y = TRUE) 
+
+
+#removing NA
+
+df_noNA <- na.omit(df_merge)
+
+```
+
+
