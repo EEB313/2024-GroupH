@@ -52,3 +52,43 @@ df_noNA <- na.omit(df_merge)
 ```
 
 
+```{r}
+model = glm(vSegmentedTF ~ HostOrder, family = 'binomial', data = df_noNA)
+summary(model)
+```
+```{r}
+df_sum <- df_noNA |> 
+  group_by(HostOrder) |>
+  summarize(sum = sum(vSegmentedTF == TRUE), n = n()) 
+
+df_sum <- as.data.frame(df_sum)
+
+
+df_sum
+```
+
+```{r}
+binomial_evaluator <- function(d = df_sum$sum, n = df_sum$n, p){
+  return(dbinom(x = d, size = n, prob = p)) # log=T returns the log-likelihood of the observation
+}
+
+
+binomial_evaluator(d = df_sum$sum, n = df_sum$n, p = 0.01)
+
+sum(log(binomial_evaluator(d = df_sum$sum, n = df_sum$n, p = 0.2)))
+```
+
+```{r}
+LogLik <- NULL
+index <- 1
+p_values_to_test <- seq(0, 1, by = 0.01)
+
+for (p in p_values_to_test){
+  LogLik[index] <- sum(log(binomial_evaluator(d = df_sum$sum, n = df_sum$n, p = p)))
+  index <- index + 1
+}
+
+LLs <- data.frame(LogLik, p = p_values_to_test)
+
+LLs |> ggplot(aes(x = p, y = LogLik)) + geom_line()
+```
