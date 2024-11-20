@@ -20,6 +20,8 @@ mv_sample_select <- select(mv_sample, HostOrder, Virus)
 
 #changes virus names to match virus data
 mv_sample_select$Virus <- sub(" ", "_", mv_sample_select$Virus)
+
+#changes to lower case
 mv_sample_select$Virus <- tolower(mv_sample_select$Virus)
 
 
@@ -28,34 +30,32 @@ mv_sample_select$Virus <- tolower(mv_sample_select$Virus)
 ```{r}
 virus_data <- read.csv("HP3_viruses.csv")
 
+#selects needed columns
 virus_select <- select(virus_data, vVirusNameCorrected, vSegmentedTF)
+
+#changes to lower case (to match mv data)
 virus_select$vVirusNameCorrected <- tolower(virus_select$vVirusNameCorrected)
 ```
 
-#rename columns
-virus_select %>% 
-  rename(
-    Virus = vVirusNameCorrected,
-    SegmentedTF = vSegmentedTF
-    )
 
 ```{r}
-#attempt to merge df:
+#attempt to merge df by virus names
+# keeps all Y and all X, even the NA ones
 df_merge <- merge(mv_sample_select, virus_select, by.x = "Virus", by.y = 'vVirusNameCorrected', 
                   all.x = TRUE, all.y = TRUE) 
 
 
 #removing NA
-
 df_noNA <- na.omit(df_merge)
 
 ```
 
-
+## GLM
 ```{r}
 model = glm(vSegmentedTF ~ HostOrder, family = 'binomial', data = df_noNA)
 summary(model)
 ```
+
 ```{r}
 df_sum <- df_noNA |> 
   group_by(HostOrder) |>
@@ -67,6 +67,7 @@ df_sum <- as.data.frame(df_sum)
 df_sum
 ```
 
+## BINOMIAL EVALUATOR 
 ```{r}
 binomial_evaluator <- function(d = df_sum$sum, n = df_sum$n, p){
   return(dbinom(x = d, size = n, prob = p)) # log=T returns the log-likelihood of the observation
@@ -92,3 +93,34 @@ LLs <- data.frame(LogLik, p = p_values_to_test)
 
 LLs |> ggplot(aes(x = p, y = LogLik)) + geom_line()
 ```
+
+## POWER ANALYSIS
+
+```{r}
+data_generator <- function(sample_size = 100, effect = 0.1){
+  age <- rexp(n = sample_size, rate = 1/10)
+  linear_predictor <- effect*age
+  prob <- 1/(1+exp(-linear_predictor))
+  
+  disease_status <- c()
+  
+  for (i in 1:length(prob)){
+  disease_status[i] <- rbinom(n = 1, size = 1, prob = prob[i])
+  }
+  
+  return(data.frame(age = age, disease_status = disease_status))
+}
+
+data <- data_generator()
+
+data %>% pivot_longer(! age) %>% 
+  ggplot(aes(x = age, y = value)) + geom_point() + 
+  geom_smooth(method = "glm", method.args = list(family = "binomial")
+              ) + labs(y = "prob. of disease (i.e., disease status =1)")
+```
+
+
+```{r}
+
+```
+
