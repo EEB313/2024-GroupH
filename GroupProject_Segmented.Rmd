@@ -31,7 +31,7 @@ mv_sample_select$Virus <- tolower(mv_sample_select$Virus)
 virus_data <- read.csv("HP3_viruses.csv")
 
 #selects needed columns
-virus_select <- select(virus_data, vVirusNameCorrected, vSegmentedTF)
+virus_select <- select(virus_data, vVirusNameCorrected, vSegmentedTF, vCytoReplicTF, vDNAoRNA)
 
 #changes to lower case (to match mv data)
 virus_select$vVirusNameCorrected <- tolower(virus_select$vVirusNameCorrected)
@@ -52,8 +52,9 @@ df_noNA <- na.omit(df_merge)
 
 ## GLM
 ```{r}
-model = glm(vSegmentedTF ~ HostOrder, family = 'binomial', data = df_noNA)
+model = glm(vCytoReplicTF ~ vDNAoRNA , family = 'binomial', data = df_noNA)
 summary(model)
+
 ```
 
 ```{r}
@@ -67,60 +68,13 @@ df_sum <- as.data.frame(df_sum)
 df_sum
 ```
 
-## BINOMIAL EVALUATOR 
-```{r}
-binomial_evaluator <- function(d = df_sum$sum, n = df_sum$n, p){
-  return(dbinom(x = d, size = n, prob = p)) # log=T returns the log-likelihood of the observation
-}
-
-
-binomial_evaluator(d = df_sum$sum, n = df_sum$n, p = 0.01)
-
-sum(log(binomial_evaluator(d = df_sum$sum, n = df_sum$n, p = 0.2)))
-```
-
-```{r}
-LogLik <- NULL
-index <- 1
-p_values_to_test <- seq(0, 1, by = 0.01)
-
-for (p in p_values_to_test){
-  LogLik[index] <- sum(log(binomial_evaluator(d = df_sum$sum, n = df_sum$n, p = p)))
-  index <- index + 1
-}
-
-LLs <- data.frame(LogLik, p = p_values_to_test)
-
-LLs |> ggplot(aes(x = p, y = LogLik)) + geom_line()
-```
-
-## POWER ANALYSIS
-
-```{r}
-data_generator <- function(sample_size = 100, effect = 0.1){
-  age <- rexp(n = sample_size, rate = 1/10)
-  linear_predictor <- effect*age
-  prob <- 1/(1+exp(-linear_predictor))
-  
-  disease_status <- c()
-  
-  for (i in 1:length(prob)){
-  disease_status[i] <- rbinom(n = 1, size = 1, prob = prob[i])
-  }
-  
-  return(data.frame(age = age, disease_status = disease_status))
-}
-
-data <- data_generator()
-
-data %>% pivot_longer(! age) %>% 
-  ggplot(aes(x = age, y = value)) + geom_point() + 
-  geom_smooth(method = "glm", method.args = list(family = "binomial")
-              ) + labs(y = "prob. of disease (i.e., disease status =1)")
-```
 
 
 ```{r}
+virus_data |> 
+  group_by(vCytoReplicTF) |> #DNA/RNA, SS/DS
+  summarize(sum = sum(vSegmentedTF == TRUE)) 
+
 
 ```
 
