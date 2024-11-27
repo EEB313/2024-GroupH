@@ -13,13 +13,14 @@ set.seed(313)
 mv_associations <- read.csv("MammalViruses_Associations.csv")
 
 #samples only 1000 so we can test it, and then run on all data
-mv_sample <- mv_associations %>% sample_n(1000)
+#mv_sample <- mv_associations %>% sample_n(1000)
+mv_sample <- mv_associations 
 
 #selects columns
 mv_sample_select <- select(mv_sample, HostOrder, Virus)
 
 #changes virus names to match virus data
-mv_sample_select$Virus <- sub(" ", "_", mv_sample_select$Virus)
+mv_sample_select$Virus <- gsub(" ", "_", mv_sample_select$Virus)
 
 #changes to lower case
 mv_sample_select$Virus <- tolower(mv_sample_select$Virus)
@@ -28,13 +29,23 @@ mv_sample_select$Virus <- tolower(mv_sample_select$Virus)
 ```
 
 ```{r}
+#CLEANING UP VIRUS DATA
 virus_data <- read.csv("HP3_viruses.csv")
 
-#selects needed columns
-virus_select <- select(virus_data, vVirusNameCorrected, vSegmentedTF, vCytoReplicTF, vDNAoRNA)
+#see proportion of DNA/RNA viruses segmented
+virus_data |> 
+  group_by(vDNAoRNA) |> #DNA/RNA, SS/DS
+  summarize(sum = sum(vSegmentedTF == TRUE), n = n()) 
+#Since there are not segmented DNA viruses in the dataset, decided to remove all DNA viruses
+
+#selects needed columns and only DNA viruses
+virus_select <- virus_data |> 
+  filter(vDNAoRNA == 'RNA') |> 
+  select(vVirusNameCorrected, vSegmentedTF, vCytoReplicTF, vFamily, vGenomeAveLength, vEnvelope, vSSoDS, IsZoonotic)
 
 #changes to lower case (to match mv data)
 virus_select$vVirusNameCorrected <- tolower(virus_select$vVirusNameCorrected)
+virus_select$vVirusNameCorrected <- gsub(" ", "_", virus_select$vVirusNameCorrected)
 ```
 
 
@@ -47,34 +58,27 @@ df_merge <- merge(mv_sample_select, virus_select, by.x = "Virus", by.y = 'vVirus
 
 #removing NA
 df_noNA <- na.omit(df_merge)
+#total of 20k rows!
 
-```
 
-## GLM
-```{r}
-model = glm(vCytoReplicTF ~ vDNAoRNA , family = 'binomial', data = df_noNA)
-summary(model)
-
-```
-
-```{r}
-df_sum <- df_noNA |> 
+#checking if there's enough data in each host order to count
+df_noNA |> 
   group_by(HostOrder) |>
   summarize(sum = sum(vSegmentedTF == TRUE), n = n()) 
 
-df_sum <- as.data.frame(df_sum)
 
-
-df_sum
 ```
 
-
-
+vCytoReplicTF, vFamily, vGenomeAveLength, vEnvelope, vSSoDS, IsZoonotic
+## GLM wait should GLM be made with just this model or should i get the proportion of v segmented ? 
 ```{r}
-virus_data |> 
-  group_by(vCytoReplicTF) |> #DNA/RNA, SS/DS
-  summarize(sum = sum(vSegmentedTF == TRUE)) 
+model = glm(vSegmentedTF ~ vFamily + vGenomeAveLength + vEnvelope + vSSoDS + IsZoonotic, family = 'binomial', data = df_noNA)
+summary(model)
 
-
+model2 = glm(vSegmentedTF ~ HostOrder + vFamily + vGenomeAveLength + vEnvelope + vSSoDS + IsZoonotic, family = 'binomial', data = df_noNA)
+summary(model2)
 ```
+
+
+
 
