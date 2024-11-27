@@ -72,10 +72,10 @@ df_noNA |>
 vCytoReplicTF, vFamily, vGenomeAveLength, vEnvelope, vSSoDS, IsZoonotic
 ## GLM wait should GLM be made with just this model or should i get the proportion of v segmented ? 
 ```{r}
-model = glm(vSegmentedTF ~ vFamily + vGenomeAveLength + vEnvelope + vSSoDS + IsZoonotic, family = 'binomial', data = df_noNA)
+model = glm(vSegmentedTF ~ vFamily + vGenomeAveLength + vEnvelope + vSSoDS + IsZoonotic + vCytoReplicTF, family = 'binomial', data = df_noNA)
 summary(model)
 
-model2 = glm(vSegmentedTF ~ HostOrder + vFamily + vGenomeAveLength + vEnvelope + vSSoDS + IsZoonotic, family = 'binomial', data = df_noNA)
+model2 = glm(vSegmentedTF ~ HostOrder + vFamily + vGenomeAveLength + vEnvelope + vSSoDS + IsZoonotic + vCytoReplicTF, family = 'binomial', data = df_noNA)
 summary(model2)
 ```
 
