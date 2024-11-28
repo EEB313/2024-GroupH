@@ -62,6 +62,8 @@ df_noNA <- na.omit(df_merge)
 
 ```
 
+
+
 ```{r}
 
 #checking if which host orders don't have enough data, cut off at 40
@@ -76,6 +78,8 @@ df_hostremoved <- df_noNA |>
            HostOrder != "pilosa" & HostOrder != "proboscidea")
 
 df_hostremoved
+
+cor(df_hostremoved$vSSoDS, df_hostremoved$vEnvelope)
 ```
 
 
@@ -92,24 +96,18 @@ df_hostremoved |>
     vSSoDS == 'SS' ~ 1,
     vSSoDS == 'DS' ~ 0)) -> df_hostremoved
 
-
 cor(df_hostremoved$vCytoReplicTF, df_hostremoved$vEnvelope)
 
-  
 ```
 
 
 ## GLM virusfamily's existence is being weird
 ```{r}
-model = glm(vSegmentedTF ~  + vGenomeAveLength + vSSoDS + IsZoonotic, family = 'binomial', data = df_hostremoved)
+model = glm(vSegmentedTF ~ vGenomeAveLength*vEnvelope  + vSSoDS*IsZoonotic + vCytoReplicTF + vEnvelope, family = 'binomial', data = df_hostremoved)
 summary(model)
 
-model2 = glm(vSegmentedTF ~ HostOrder + vFamily + vGenomeAveLength + vSSoDS + IsZoonotic, family = 'binomial', data = df_hostremoved)
-
+model2 = glm(vSegmentedTF ~ HostOrder + vGenomeAveLength*vEnvelope  + vSSoDS*IsZoonotic + vCytoReplicTF + vEnvelope, family = 'binomial', data = df_hostremoved)
 summary(model2)
-
-model3 = glm(vSegmentedTF ~ vFamily, family = 'binomial', data = df_hostremoved)
-summary(model3)
 ```
 
 
