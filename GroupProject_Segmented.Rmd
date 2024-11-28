@@ -98,10 +98,13 @@ df_hostremoved |>
 ## GLM virusfamily's existence is being weird
 ```{r}
 model = glm(vSegmentedTF ~ vGenomeAveLength*vEnvelope  + vSSoDS*IsZoonotic + vCytoReplicTF + vEnvelope, family = 'binomial', data = df_hostremoved)
+
 summary(model)
 
 model2 = glm(vSegmentedTF ~ HostOrder + vGenomeAveLength*vEnvelope  + vSSoDS*IsZoonotic + vCytoReplicTF + vEnvelope, family = 'binomial', data = df_hostremoved)
+
 summary(model2)
+
 ```
 
 
