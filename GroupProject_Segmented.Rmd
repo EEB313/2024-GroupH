@@ -60,23 +60,56 @@ df_merge <- merge(mv_sample_select, virus_select, by.x = "Virus", by.y = 'vVirus
 df_noNA <- na.omit(df_merge)
 #total of 20k rows!
 
-
-#checking if there's enough data in each host order to count
-df_noNA |> 
-  group_by(HostOrder) |>
-  summarize(sum = sum(vSegmentedTF == TRUE), n = n()) 
-
-
 ```
 
-vCytoReplicTF, vFamily, vGenomeAveLength, vEnvelope, vSSoDS, IsZoonotic
-## GLM wait should GLM be made with just this model or should i get the proportion of v segmented ? 
 ```{r}
-model = glm(vSegmentedTF ~ vFamily + vGenomeAveLength + vEnvelope + vSSoDS + IsZoonotic + vCytoReplicTF, family = 'binomial', data = df_noNA)
+
+#checking if which host orders don't have enough data, cut off at 40
+df_noNA |> 
+  group_by(HostOrder) |>
+  summarize(sum = sum(vSegmentedTF == TRUE), n = n()) |> 
+  filter(n < 40)
+
+df_hostremoved <- df_noNA |> 
+  filter(HostOrder != "cingulata" & HostOrder != "dasyuromorphia" & 
+           HostOrder != "eulipotyphla" & HostOrder != "peramelemorphia" &
+           HostOrder != "pilosa" & HostOrder != "proboscidea")
+
+df_hostremoved
+```
+
+
+```{r}
+
+df_hostremoved %>%
+  mutate(vEnvelope = case_when(
+    vEnvelope == 'enveloped' ~ 1,
+    vEnvelope == 'non-enveloped' ~ 0)) -> df_hostremoved
+  
+  
+df_hostremoved |>
+  mutate(vSSoDS = case_when(
+    vSSoDS == 'SS' ~ 1,
+    vSSoDS == 'DS' ~ 0)) -> df_hostremoved
+
+
+cor(df_hostremoved$vCytoReplicTF, df_hostremoved$vEnvelope)
+
+  
+```
+
+
+## GLM virusfamily's existence is being weird
+```{r}
+model = glm(vSegmentedTF ~  + vGenomeAveLength + vSSoDS + IsZoonotic, family = 'binomial', data = df_hostremoved)
 summary(model)
 
-model2 = glm(vSegmentedTF ~ HostOrder + vFamily + vGenomeAveLength + vEnvelope + vSSoDS + IsZoonotic + vCytoReplicTF, family = 'binomial', data = df_noNA)
+model2 = glm(vSegmentedTF ~ HostOrder + vFamily + vGenomeAveLength + vSSoDS + IsZoonotic, family = 'binomial', data = df_hostremoved)
+
 summary(model2)
+
+model3 = glm(vSegmentedTF ~ vFamily, family = 'binomial', data = df_hostremoved)
+summary(model3)
 ```
 
 
