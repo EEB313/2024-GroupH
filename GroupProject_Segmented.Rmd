@@ -65,7 +65,6 @@ df_noNA <- na.omit(df_merge)
 
 
 ```{r}
-
 #checking if which host orders don't have enough data, cut off at 40
 df_noNA |> 
   group_by(HostOrder) |>
@@ -78,13 +77,11 @@ df_hostremoved <- df_noNA |>
            HostOrder != "pilosa" & HostOrder != "proboscidea")
 
 df_hostremoved
-
-cor(df_hostremoved$vSSoDS, df_hostremoved$vEnvelope)
 ```
 
 
 ```{r}
-
+#fixing host removed to have 0s and 1s instead of DS/SS and non/enveloped
 df_hostremoved %>%
   mutate(vEnvelope = case_when(
     vEnvelope == 'enveloped' ~ 1,
@@ -95,9 +92,6 @@ df_hostremoved |>
   mutate(vSSoDS = case_when(
     vSSoDS == 'SS' ~ 1,
     vSSoDS == 'DS' ~ 0)) -> df_hostremoved
-
-cor(df_hostremoved$vCytoReplicTF, df_hostremoved$vEnvelope)
-
 ```
 
 
