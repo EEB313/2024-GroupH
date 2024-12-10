@@ -8,40 +8,41 @@ date: "2024-11-05"
 library(tidyverse)
 ```
 
+#CLEANING UP MAMMAL-VIRUS DATA
 ```{r}
 #read viruses in
 mv_associations <- read.csv("MammalViruses_Associations.csv")
 
-# old sampling of MV associations to make tests of the analysis easier. Left
-# in, but unaffecting final analysis. 
-
-#selects columns
+#selects columns from MV-associations that we actually need!
 mv_sample_select <- select(mv_associations, HostOrder, Virus)
 
-#changes virus names to match virus data
+#changes virus names to match virus data, replacing spaces with underscores
 mv_sample_select$Virus <- gsub(" ", "_", mv_sample_select$Virus)
 
-#changes to lower case
+#changes all text to lower case, to standardize with other df!
 mv_sample_select$Virus <- tolower(mv_sample_select$Virus)
 
 ```
 
-```{r}
 #CLEANING UP VIRUS DATA
+```{r}
+#read in
 virus_data <- read.csv("HP3_viruses.csv")
 
 #see proportion of DNA/RNA viruses segmented
 virus_data |> 
   group_by(vDNAoRNA) |> #DNA/RNA, SS/DS
   summarize(sum = sum(vSegmentedTF == TRUE), n = n()) 
-#Since there are not segmented DNA viruses in the dataset, decided to remove all DNA viruses
+#Since there are not segmented DNA viruses in the dataset, so we've decided to 
+#remove all DNA viruses since we won't end up examining them anyway
 
-#selects needed columns and only DNA viruses
+#selects predictor columns (virus traits) and filters out viruses
 virus_select <- virus_data |> 
   filter(vDNAoRNA == 'RNA') |> 
   select(vVirusNameCorrected, vSegmentedTF, vCytoReplicTF, vGenomeAveLength, vEnvelope, vSSoDS, IsZoonotic)
 
-#changes to lower case (to match mv data)
+#changes text to lower case, replaces spaces with underscores
+#to match mammal-viruses assoc data)
 virus_select$vVirusNameCorrected <- tolower(virus_select$vVirusNameCorrected)
 virus_select$vVirusNameCorrected <- gsub(" ", "_", virus_select$vVirusNameCorrected)
 ```
@@ -56,13 +57,16 @@ df_merge <- merge(mv_sample_select, virus_select, by.x = "Virus", by.y = 'vVirus
 
 #removing NA
 df_noNA <- na.omit(df_merge)
-#total of 20k rows!
+#total of 20k rows! which is a lot less than we had before
 ```
 
 
 
 ```{r}
-#checking if which host orders don't have enough data, cut off at 40
+#checking if which host orders don't have enough data. 
+#decided arbitrary cut off at 40
+
+# examining which hosts have less than 40 data points
 df_noNA |> 
   group_by(HostOrder) |>
   summarize(sum = sum(vSegmentedTF == TRUE), n = n()) |> 
@@ -74,6 +78,7 @@ df_hostremoved <- df_noNA |>
            HostOrder != "eulipotyphla" & HostOrder != "peramelemorphia" &
            HostOrder != "pilosa" & HostOrder != "proboscidea")
 
+#our final dataset! shes a beauty
 df_hostremoved
 ```
 
@@ -92,16 +97,14 @@ df_hostremoved |>
     vSSoDS == 'DS' ~ 0)) -> df_hostremoved
 ```
 
-#GLM
+#GLM _ MODEL COMPARISON
 ```{r}
 #final model, without host order
 model = glm(vSegmentedTF ~ vGenomeAveLength*vEnvelope  + vSSoDS*IsZoonotic + vCytoReplicTF + vEnvelope, family = 'binomial', data = df_hostremoved)
-
 summary(model)
 
 #final model, with host order
 model2 = glm(vSegmentedTF ~ HostOrder + vGenomeAveLength*vEnvelope  + vSSoDS*IsZoonotic + vCytoReplicTF + vEnvelope, family = 'binomial', data = df_hostremoved)
-
 summary(model2)
 
 ```
