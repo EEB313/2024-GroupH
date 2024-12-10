@@ -6,25 +6,23 @@ date: "2024-11-05"
 
 ```{r}
 library(tidyverse)
-set.seed(313)
 ```
 
 ```{r}
+#read viruses in
 mv_associations <- read.csv("MammalViruses_Associations.csv")
 
-#samples only 1000 so we can test it, and then run on all data
-#mv_sample <- mv_associations %>% sample_n(1000)
-mv_sample <- mv_associations 
+# old sampling of MV associations to make tests of the analysis easier. Left
+# in, but unaffecting final analysis. 
 
 #selects columns
-mv_sample_select <- select(mv_sample, HostOrder, Virus)
+mv_sample_select <- select(mv_associations, HostOrder, Virus)
 
 #changes virus names to match virus data
 mv_sample_select$Virus <- gsub(" ", "_", mv_sample_select$Virus)
 
 #changes to lower case
 mv_sample_select$Virus <- tolower(mv_sample_select$Virus)
-
 
 ```
 
@@ -59,7 +57,6 @@ df_merge <- merge(mv_sample_select, virus_select, by.x = "Virus", by.y = 'vVirus
 #removing NA
 df_noNA <- na.omit(df_merge)
 #total of 20k rows!
-
 ```
 
 
@@ -71,6 +68,7 @@ df_noNA |>
   summarize(sum = sum(vSegmentedTF == TRUE), n = n()) |> 
   filter(n < 40)
 
+#removing host orders with < 40 data points
 df_hostremoved <- df_noNA |> 
   filter(HostOrder != "cingulata" & HostOrder != "dasyuromorphia" & 
            HostOrder != "eulipotyphla" & HostOrder != "peramelemorphia" &
@@ -94,18 +92,39 @@ df_hostremoved |>
     vSSoDS == 'DS' ~ 0)) -> df_hostremoved
 ```
 
-
-## GLM virusfamily's existence is being weird
+#GLM
 ```{r}
+#final model, without host order
 model = glm(vSegmentedTF ~ vGenomeAveLength*vEnvelope  + vSSoDS*IsZoonotic + vCytoReplicTF + vEnvelope, family = 'binomial', data = df_hostremoved)
 
 summary(model)
 
+#final model, with host order
 model2 = glm(vSegmentedTF ~ HostOrder + vGenomeAveLength*vEnvelope  + vSSoDS*IsZoonotic + vCytoReplicTF + vEnvelope, family = 'binomial', data = df_hostremoved)
 
 summary(model2)
 
 ```
+
+
+```{r}
+#UNUSED MODEL > originally was going to use virus family, decided not to due to lots of multicollinearity
+
+model_unused = glm(vSegmentedTF ~ vFamily + vGenomeAveLength*vEnvelope  + vSSoDS*IsZoonotic + vCytoReplicTF + vEnvelope, family = 'binomial', data = df_hostremoved)
+
+summary(model_unused)
+
+```
+```{r}
+df_hostremoved |> 
+  group_by(HostOrder) |>
+  summarize(sum(vSegmentedTF == TRUE)/n())
+
+```
+
+
+
+
 
 
 
