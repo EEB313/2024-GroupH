@@ -14,8 +14,8 @@ vSegmentedTF - TRUE/FALSE depending on if the virus affecting the mammal os segm
 
 vCytopReplicTF - TRUE/FALSE depending on whether the virus replicates in the cytoplasm or not. 
 
-vFamily
+vEnvelope - 1 if a virus is enveloped, 0 if a virus in non-enveloped. 
 
-STATION - the sampling station within the replicate where the sample was taken. each replicate had 5 sampling stations
+vSSoDS - 1 if a virus is single stranded RNA, 0 is a virus is double stranded RNA
 
-ADULTS - the number of adult fireflies on the trap, for that station-rep-treatment-date combination.
+isZoonotic - if a virus is known to be zoonotic: to have originated from animals and infected humans.
