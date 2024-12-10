@@ -39,7 +39,7 @@ virus_data |>
 #selects needed columns and only DNA viruses
 virus_select <- virus_data |> 
   filter(vDNAoRNA == 'RNA') |> 
-  select(vVirusNameCorrected, vSegmentedTF, vCytoReplicTF, vFamily, vGenomeAveLength, vEnvelope, vSSoDS, IsZoonotic)
+  select(vVirusNameCorrected, vSegmentedTF, vCytoReplicTF, vGenomeAveLength, vEnvelope, vSSoDS, IsZoonotic)
 
 #changes to lower case (to match mv data)
 virus_select$vVirusNameCorrected <- tolower(virus_select$vVirusNameCorrected)
@@ -115,12 +115,7 @@ model_unused = glm(vSegmentedTF ~ vFamily + vGenomeAveLength*vEnvelope  + vSSoDS
 summary(model_unused)
 
 ```
-```{r}
-df_hostremoved |> 
-  group_by(HostOrder) |>
-  summarize(sum(vSegmentedTF == TRUE)/n())
 
-```
 
 
 
