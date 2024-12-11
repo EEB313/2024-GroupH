@@ -12,9 +12,9 @@ vFamily - family of given virus species.
 
 HostOrder - order of species affected by virus. Note that the repeats are because each row was originally a species, and the taxonomy information downstream of host order was stripped for the analysis.
 
-vSegmentedTF - TRUE/FALSE depending on if the virus affecting the mammal os segmented or not segmented. 
+vSegmentedTF - if the virus affecting the mammal is segmented (1) or not segmented (0). 
 
-vCytopReplicTF - TRUE/FALSE depending on whether the virus replicates in the cytoplasm or not. 
+vCytopReplicTF - whether the virus replicates in the cytoplasm (1) or not (0). 
 
 vEnvelope - 1 if a virus is enveloped, 0 if a virus in non-enveloped. 
 
