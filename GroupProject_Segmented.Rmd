@@ -39,7 +39,7 @@ virus_data |>
 #selects predictor columns (virus traits) and filters out viruses
 virus_select <- virus_data |> 
   filter(vDNAoRNA == 'RNA') |> 
-  select(vVirusNameCorrected, vSegmentedTF, vCytoReplicTF, vGenomeAveLength, vEnvelope, vSSoDS, IsZoonotic)
+  select(vFamily, vVirusNameCorrected, vSegmentedTF, vCytoReplicTF, vGenomeAveLength, vEnvelope, vSSoDS, IsZoonotic)
 
 #changes text to lower case, replaces spaces with underscores
 #to match mammal-viruses assoc data)
@@ -102,9 +102,9 @@ df_hostremoved |>
     vSegmentedTF == FALSE ~ 0)) -> df_hostremoved
 
 df_hostremoved |>
-  mutate(vEnvelope = case_when(
-    vEnvelope == TRUE ~ 1,
-    vEnvelope == FALSE ~ 0)) -> df_hostremoved
+  mutate(vCytoReplicTF = case_when(
+    vCytoReplicTF == TRUE ~ 1,
+    vCytoReplicTF == FALSE ~ 0)) -> df_hostremoved
 ```
 
 #GLM _ MODEL COMPARISON
@@ -131,15 +131,14 @@ summary(model_unused)
 
 
 ```{r}
-DataBern |>
-  ggplot(aes(x = EvoIso, y = AnyDeaths)) + 
+#VISUALIZATION OF FITTED MODEL, W/O HOST ORDER
+df_hostremoved |>
+  ggplot(aes(x = vGenomeAveLength*vEnvelope  + vSSoDS*IsZoonotic + vCytoReplicTF + vEnvelope, y = vSegmentedTF)) + 
   geom_point() +
   geom_smooth(method = "glm", 
               method.args = list(family = "binomial")
               )
 ```
-
-
 
 
 
