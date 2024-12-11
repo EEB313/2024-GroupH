@@ -95,6 +95,16 @@ df_hostremoved |>
   mutate(vSSoDS = case_when(
     vSSoDS == 'SS' ~ 1,
     vSSoDS == 'DS' ~ 0)) -> df_hostremoved
+
+df_hostremoved |>
+  mutate(vSegmentedTF = case_when(
+    vSegmentedTF == TRUE ~ 1,
+    vSegmentedTF == FALSE ~ 0)) -> df_hostremoved
+
+df_hostremoved |>
+  mutate(vEnvelope = case_when(
+    vEnvelope == TRUE ~ 1,
+    vEnvelope == FALSE ~ 0)) -> df_hostremoved
 ```
 
 #GLM _ MODEL COMPARISON
@@ -120,6 +130,14 @@ summary(model_unused)
 ```
 
 
+```{r}
+DataBern |>
+  ggplot(aes(x = EvoIso, y = AnyDeaths)) + 
+  geom_point() +
+  geom_smooth(method = "glm", 
+              method.args = list(family = "binomial")
+              )
+```
 
 
 

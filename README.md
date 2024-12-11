@@ -6,7 +6,9 @@ Final Dataset: FINALDATASET.csv file. Referred to as df_hostremoved in the code 
 
 Fields are defined as follows:
 
-Virus - name of virus as givn in CLOVER datasets, edited for accordance w/ NCBI. 
+Virus - name of virus as given in CLOVER datasets, edited for accordance w/ NCBI. 
+
+vFamily - family of given virus species. 
 
 HostOrder - order of species affected by virus. Note that the repeats are because each row was originally a species, and the taxonomy information downstream of host order was stripped for the analysis.
 
